@@ -1,0 +1,28 @@
+FROM node:20
+
+WORKDIR /apps
+
+COPY core/package*.json core/
+COPY core/tsconfig.json core/
+COPY core/src core/src
+
+WORKDIR /apps/core
+RUN npm install && npm run build
+
+WORKDIR /apps
+
+COPY stats-service/package*.json stats-service/
+COPY stats-service/tsconfig.json stats-service/
+COPY stats-service/tsup.config.ts stats-service/
+COPY stats-service/src stats-service/src
+COPY stats-service/prisma stats-service/prisma
+COPY stats-service/prisma.config.ts stats-service/
+
+WORKDIR /apps/stats-service
+
+RUN npm install
+
+EXPOSE 3000
+EXPOSE 5555
+
+CMD ["npm", "run", "dev"]

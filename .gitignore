@@ -38,6 +38,7 @@ Thumbs.db
 
 # Database files
 *.db
+data/
 
 *package-lock.json
 

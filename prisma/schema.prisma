@@ -1,0 +1,35 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+}
+
+model Match {
+    id          String   @id @default(uuid())
+    playerAId   String
+    playerBId   String
+    scoreA      Int      @default(0)
+    scoreB      Int      @default(0)
+    winnerId    String?  // UUID of the winner or null if draw
+    duration    Int      // Duration in seconds
+    playedAt    DateTime @default(now())
+
+    @@index([playerAId])
+    @@index([playerBId])
+    @@index([playedAt(sort: Desc)])
+}
+
+model PlayerStats {
+    userId      String   @id // Primary Key (Matches user-service UUID)
+    wins        Int      @default(0)
+    losses      Int      @default(0)
+    draws       Int      @default(0)
+    elo         Int      @default(1000) // MMR/Elo rating
+    xp          Int      @default(0)
+    level       Int      @default(1)
+    updatedAt   DateTime @updatedAt
+
+    @@index([elo(sort: Desc)]) // Optimized for leaderboard queries
+}

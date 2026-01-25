@@ -1,13 +1,14 @@
 import 'dotenv/config'
-import { FastifyInstance } from 'fastify';
-import { buildApp, startServer, API_PREFIX } from '@core/index.js';
+import { buildApp, startServer, API_PREFIX, healthRoutes } from '@core/index.js';
 import { PORT, HOST, SERVICE_NAME } from './utils/env.js';
-import healthRoutes from '@core/routes/health.routes.js';
+import statsRoutes from 'src/routes/index.js';
 
-const app: FastifyInstance = buildApp(SERVICE_NAME);
+const app = buildApp(SERVICE_NAME);
+type AppInstance = typeof app;
 
-async function registerRoutes(app: FastifyInstance) {
+async function registerRoutes(app: AppInstance) {
 	await app.register(healthRoutes, { prefix: `${API_PREFIX}/stats` });
+	await app.register(statsRoutes as any, { prefix: `${API_PREFIX}/stats` })
 }
 
-startServer(app, registerRoutes, HOST, PORT);
+startServer(app, registerRoutes, HOST, PORT, SERVICE_NAME);
