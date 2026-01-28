@@ -37,6 +37,6 @@ WORKDIR /apps/stats-service
 
 RUN npm install --omit=dev
 
-EXPOSE 3000
+EXPOSE 3005
 
 CMD ["npm", "run", "start"]
