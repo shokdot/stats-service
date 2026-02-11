@@ -7,7 +7,8 @@
 		"start": "node dist/server.js",
 		"build": "tsup",
 		"dev": "tsx watch src/server.ts",
-		"predev": "npm run db:deploy",
+		"predev": "npm run db:push",
+		"db:push": "npx prisma db push && npx prisma generate",
 		"db:deploy": "npx prisma migrate deploy && npx prisma generate"
 	},
 	"devDependencies": {
