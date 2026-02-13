@@ -41,6 +41,11 @@ const recordMatchSchema: RouteShorthandOptions = {
 					type: 'number',
 					minimum: 0,
 					description: 'Game duration in seconds'
+				},
+				gameMode: {
+					type: 'string',
+					enum: ['online', 'local', 'ai_easy', 'ai_medium', 'ai_hard'],
+					description: 'Game mode (defaults to online)'
 				}
 			}
 		},
@@ -54,7 +59,7 @@ const recordMatchSchema: RouteShorthandOptions = {
 					message: { type: 'string' },
 					data: {
 						type: 'object',
-						required: ['id', 'playerAId', 'playerBId', 'scoreA', 'scoreB', 'duration', 'playedAt'],
+						required: ['id', 'playerAId', 'playerBId', 'scoreA', 'scoreB', 'duration', 'gameMode', 'playedAt'],
 						additionalProperties: false,
 						properties: {
 							id: { type: 'string', format: 'uuid' },
@@ -64,6 +69,7 @@ const recordMatchSchema: RouteShorthandOptions = {
 							scoreB: { type: 'number' },
 							winnerId: { type: ['string', 'null'], format: 'uuid' },
 							duration: { type: 'number' },
+							gameMode: { type: 'string' },
 							playedAt: { type: 'string', format: 'date-time' }
 						}
 					}

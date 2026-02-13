@@ -61,7 +61,8 @@ const recordMatch = async (data: RecordMatchDTO) => {
 				scoreA: data.scoreA,
 				scoreB: data.scoreB,
 				winnerId: data.winnerId,
-				duration: data.duration
+				duration: data.duration,
+				gameMode: data.gameMode ?? 'online'
 			}
 		});
 

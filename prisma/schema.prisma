@@ -14,6 +14,7 @@ model Match {
     scoreB      Int      @default(0)
     winnerId    String?  // UUID of the winner or null if draw
     duration    Int      // Duration in seconds
+    gameMode    String   @default("online") // "online" | "local" | "ai_easy" | "ai_medium" | "ai_hard"
     playedAt    DateTime @default(now())
 
     @@index([playerAId])

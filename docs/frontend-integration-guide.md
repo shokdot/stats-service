@@ -51,13 +51,37 @@ How a **React/Next.js** frontend should use the Stats Service: flows, requests, 
 
 ---
 
+## 5. Record AI match
+
+**Purpose:** Save the result of a client-side AI game. No ELO change; awards XP only.
+
+**Request:** `POST /api/v1/stats/ai-match`
+
+**Body:**
+
+```json
+{
+  "scoreA": 5,
+  "scoreB": 3,
+  "duration": 120,
+  "gameMode": "ai_medium"
+}
+```
+
+**Flow:** Call with Bearer token after AI game ends. The server determines the winner from scores (scoreA > scoreB = player won). `gameMode` must be one of `ai_easy`, `ai_medium`, `ai_hard`.
+
+**Match history note:** AI matches appear in match history with `gameMode` set to the AI difficulty. The `playerBId` field contains a sentinel string (`"ai_easy"`, etc.) — do not try to resolve it as a real user. Instead, display "AI (Easy)" / "AI (Medium)" / "AI (Hard)" as the opponent name.
+
+---
+
 ## Quick reference
 
-| User action       | Request                                      | Then              |
-|-------------------|----------------------------------------------|-------------------|
-| View player stats | `GET /stats/:userId`                         | Render stats      |
-| View match history| `GET /stats/:userId/history?page=&limit=`    | Render list + pagination |
-| View leaderboard  | `GET /stats/leaderboard?limit=&offset=`      | Render table      |
-| View player rank  | `GET /stats/leaderboard/rank/:userId`        | Render rank/ELO   |
+| User action        | Request                                      | Then              |
+|--------------------|----------------------------------------------|-------------------|
+| View player stats  | `GET /stats/:userId`                         | Render stats      |
+| View match history | `GET /stats/:userId/history?page=&limit=`    | Render list + pagination |
+| View leaderboard   | `GET /stats/leaderboard?limit=&offset=`      | Render table      |
+| View player rank   | `GET /stats/leaderboard/rank/:userId`        | Render rank/ELO   |
+| Record AI match    | `POST /stats/ai-match`                       | Save AI game result |
 
 Use the same access token as for Auth Service; on 401, refresh token and retry (see Auth Service frontend guide).

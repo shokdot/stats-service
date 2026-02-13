@@ -47,16 +47,17 @@ const getMatchHistorySchema: RouteShorthandOptions = {
 						type: 'array',
 						items: {
 							type: 'object',
-							required: ['id', 'playerAId', 'playerBId', 'scoreA', 'scoreB', 'duration', 'playedAt'],
+							required: ['id', 'playerAId', 'playerBId', 'scoreA', 'scoreB', 'duration', 'gameMode', 'playedAt'],
 							additionalProperties: false,
 							properties: {
 								id: { type: 'string', format: 'uuid' },
 								playerAId: { type: 'string', format: 'uuid' },
-								playerBId: { type: 'string', format: 'uuid' },
+								playerBId: { type: 'string' },
 								scoreA: { type: 'number' },
 								scoreB: { type: 'number' },
-								winnerId: { type: ['string', 'null'], format: 'uuid' },
+								winnerId: { type: ['string', 'null'] },
 								duration: { type: 'number' },
+								gameMode: { type: 'string' },
 								playedAt: { type: 'string', format: 'date-time' }
 							}
 						}
