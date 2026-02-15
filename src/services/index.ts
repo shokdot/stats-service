@@ -5,3 +5,4 @@ export { default as getMatchHistory } from './getMatchHistory.service.js';
 export { default as getLeaderboard } from './getLeaderboard.service.js';
 export { default as getPlayerRank } from './getPlayerRank.service.js';
 export { default as initPlayerStats } from './initPlayerStats.service.js';
+export { default as deleteUserStats } from './deleteUserStats.service.js';

@@ -49,8 +49,8 @@ export const calculateElo = (
     const eloChangeA = Math.round(K_FACTOR * (actualA - expectedA));
     const eloChangeB = Math.round(K_FACTOR * (actualB - expectedB));
 
-    const newEloA = eloA + eloChangeA;
-    const newEloB = eloB + eloChangeB;
+    const newEloA = Math.max(0, eloA + eloChangeA);
+    const newEloB = Math.max(0, eloB + eloChangeB);
 
     return {
         newEloA,

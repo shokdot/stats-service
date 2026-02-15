@@ -23,7 +23,7 @@ const recordMatch = async (data: RecordMatchDTO) => {
 				wins: 0,
 				losses: 0,
 				draws: 0,
-				elo: 0,
+				elo: 1000,
 				xp: 0,
 				level: 1
 			},
@@ -37,7 +37,7 @@ const recordMatch = async (data: RecordMatchDTO) => {
 				wins: 0,
 				losses: 0,
 				draws: 0,
-				elo: 0,
+				elo: 1000,
 				xp: 0,
 				level: 1
 			},

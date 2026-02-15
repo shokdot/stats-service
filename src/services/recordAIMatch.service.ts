@@ -56,7 +56,7 @@ const recordAIMatch = async (userId: string, data: RecordAIMatchDTO) => {
 				wins: playerWon ? 1 : 0,
 				losses: playerWon ? 0 : 1,
 				draws: 0,
-				elo: 0,
+				elo: 1000,
 				xp: data.duration,
 				level: 1
 			},
