@@ -1,11 +1,8 @@
 # Stats Service
 
-Statistics and leaderboard microservice for the ft_transcendence platform. Handles player stats (wins, losses, draws, ELO, XP, level), match history, leaderboard, and rank. Internal API for recording matches (game-service).
+> Part of the [ft_transcendence](https://github.com/shokdot/ft_transcendence) project.
 
-## Features
-
-- **External API**: Player stats, match history, leaderboard, player rank (Bearer auth)
-- **Internal API**: Record match (service token)
+Statistics and leaderboard microservice. Tracks player stats (wins, losses, draws, ELO, XP, level), match history, leaderboard, and player ranks. Also supports recording local AI matches. Internal API for game-service to record online match results.
 
 ## Tech Stack
 
@@ -16,21 +13,10 @@ Statistics and leaderboard microservice for the ft_transcendence platform. Handl
 
 ## Quick Start
 
-### Prerequisites
-
-- Node.js 20+
-- Environment variables (see [Environment](#environment))
-
-### Install & Run
-
 ```bash
 npm install
 npm run dev
 ```
-
-- **Dev**: `npm run dev`
-- **Build**: `npm run build`
-- **Start**: `npm start` (production)
 
 Service listens on `HOST:PORT` (default `0.0.0.0:3005`).
 
@@ -40,48 +26,235 @@ Built from monorepo root; see project `Dockerfile` and `docker-compose*.yml`.
 
 ## Environment
 
-| Variable                | Required | Description                    |
-|-------------------------|----------|--------------------------------|
-| `PORT`                  | No       | Server port (default: 3005)    |
-| `HOST`                  | No       | Bind address (default: 0.0.0.0)|
-| `SERVICE_TOKEN`         | Yes      | Service-to-service token       |
-| `JWT_SECRET`            | Yes      | Access token verification     |
-| `JWT_REFRESH_SECRET`    | Yes      | Refresh token (if needed)     |
-| `JWT_TWO_FA`            | Yes      | 2FA token (if needed)          |
-| `DATABASE_URL`          | Yes      | Database URL                   |
+| Variable             | Required | Description                      |
+|----------------------|----------|----------------------------------|
+| `PORT`               | No       | Server port (default: 3005)      |
+| `HOST`               | No       | Bind address (default: 0.0.0.0)  |
+| `SERVICE_TOKEN`      | Yes      | Service-to-service token         |
+| `JWT_SECRET`         | Yes      | Access token verification        |
+| `DATABASE_URL`       | Yes      | Database URL                     |
 
-API prefix defaults to `/api/v1` (from core).
+---
 
-## API Base URL
+## API Endpoints
 
-All stats routes are under:
+Base URL: **`{STATS_SERVICE_URL}/api/v1/stats`**
 
-```
-{baseUrl}/api/v1/stats
-```
+All external endpoints use **Bearer** access token in `Authorization` header.
 
-- **External (frontend):** `GET /:userId`, `GET /:userId/history`, `GET /leaderboard`, `GET /leaderboard/rank/:userId`
-- **Internal:** `POST /internal/...` (record match; service token)
+### Error Response Format
 
-## Documentation
-
-- **[API Endpoints](docs/api-endpoints.md)** — Full list of endpoints, request/response bodies, errors.
-- **[Frontend Integration Guide](docs/frontend-integration-guide.md)** — Flows and usage from React/Next.js.
-
-## Project Structure
-
-```
-src/
-├── controllers/   # external (stats, history, leaderboard, rank), internal (recordMatch)
-├── services/      # Business logic, ELO
-├── routes/        # external + internal
-├── schemas/       # Validation
-├── dto/           # Data transfer types
-└── utils/         # env, prisma
-prisma/
-└── schema.prisma
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable message",
+    "details": null
+  }
+}
 ```
 
-## License
+---
 
-Part of ft_transcendence project.
+### Player Stats
+
+#### `GET /:userId`
+
+Get player statistics for a user. **Auth: Bearer**
+
+**Params:** `userId` — User ID (uuid)
+
+**Success (200):**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "userId": "uuid",
+    "wins": 10,
+    "losses": 5,
+    "draws": 1,
+    "elo": 1100,
+    "xp": 2400,
+    "level": 5,
+    "updatedAt": "date-time"
+  }
+}
+```
+
+---
+
+### Match History
+
+#### `GET /:userId/history`
+
+Get paginated match history for a user. **Auth: Bearer**
+
+**Params:** `userId`
+
+**Query:**
+
+| Name  | Type   | Required | Description                     |
+|-------|--------|----------|---------------------------------|
+| page  | number | No       | Page number (default: 1)        |
+| limit | number | No       | Per page (default: 20, max: 100)|
+
+**Success (200):**
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "uuid",
+      "playerAId": "uuid",
+      "playerBId": "uuid or ai sentinel",
+      "scoreA": 7,
+      "scoreB": 3,
+      "winnerId": "uuid",
+      "duration": 120,
+      "gameMode": "online",
+      "playedAt": "date-time"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "totalPages": 5
+  }
+}
+```
+
+> For AI matches, `playerBId` is a sentinel string (`"ai_easy"`, `"ai_medium"`, `"ai_hard"`). `winnerId: null` on an AI match means the AI won (not a draw).
+
+---
+
+### Leaderboard
+
+#### `GET /leaderboard`
+
+Get the global leaderboard. **Auth: Bearer**
+
+**Query:**
+
+| Name   | Type   | Required | Description                          |
+|--------|--------|----------|--------------------------------------|
+| limit  | number | No       | Number of entries (default: 100, max: 1000)|
+| offset | number | No       | Pagination offset (default: 0)       |
+
+**Success (200):**
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "userId": "uuid",
+      "wins": 10,
+      "losses": 2,
+      "draws": 0,
+      "elo": 1200,
+      "xp": 3000,
+      "level": 6,
+      "rank": 1
+    }
+  ],
+  "count": 100
+}
+```
+
+---
+
+#### `GET /leaderboard/rank/:userId`
+
+Get a specific player's rank. **Auth: Bearer**
+
+**Params:** `userId`
+
+**Success (200):**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "userId": "uuid",
+    "elo": 1100,
+    "rank": 15
+  }
+}
+```
+
+---
+
+### AI Match
+
+#### `POST /ai-match`
+
+Record the result of a local AI match. **Auth: Bearer**
+
+> AI matches do **not** affect ELO. They award XP based on duration and track wins/losses.
+
+**Body:**
+
+| Field    | Type   | Required | Description                        |
+|----------|--------|----------|------------------------------------|
+| scoreA   | number | Yes      | Player score (min: 0)              |
+| scoreB   | number | Yes      | AI score (min: 0)                  |
+| duration | number | Yes      | Game duration in seconds (min: 1)  |
+| gameMode | string | Yes      | `"ai_easy"` \| `"ai_medium"` \| `"ai_hard"` |
+
+**Success (201):**
+
+```json
+{
+  "status": "success",
+  "message": "AI match recorded successfully",
+  "data": {
+    "id": "uuid",
+    "playerAId": "uuid",
+    "playerBId": "ai_easy",
+    "scoreA": 7,
+    "scoreB": 3,
+    "winnerId": "uuid",
+    "duration": 120,
+    "gameMode": "ai_easy",
+    "playedAt": "date-time"
+  }
+}
+```
+
+`winnerId` is the authenticated user if `scoreA > scoreB`, otherwise `null` (AI won).
+
+---
+
+### Internal API (backend only)
+
+**Auth:** Service token (`x-service-token` header). Not for frontend use.
+
+#### `POST /internal/matches`
+
+Record an online match result (called by game-service). Body follows `RecordMatchDTO` (optional `gameMode`, defaults to `"online"`).
+
+#### `POST /internal/init-stats`
+
+Initialize player stats for a new user (called by auth-service on registration). Safe to call multiple times (upsert).
+
+**Body:** `{ "userId": "uuid" }`
+
+**Success (201):** `{ "status": "success", "message": "Player stats initialized successfully" }`
+
+---
+
+### Summary
+
+| Method | Path                        | Auth    | Purpose                     |
+|--------|-----------------------------|---------|-----------------------------|
+| POST   | `/ai-match`                 | Bearer  | Record AI match             |
+| GET    | `/:userId`                  | Bearer  | Get player stats            |
+| GET    | `/:userId/history`          | Bearer  | Get match history           |
+| GET    | `/leaderboard`              | Bearer  | Global leaderboard          |
+| GET    | `/leaderboard/rank/:userId` | Bearer  | Get player rank             |
+| POST   | `/internal/matches`         | Service | Record match (internal)     |
+| POST   | `/internal/init-stats`      | Service | Init player stats (internal)|
